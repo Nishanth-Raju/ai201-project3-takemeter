@@ -10,7 +10,7 @@ A fine-tuned DistilBERT text classifier that sorts r/ConspiracyTheory posts by *
 
 ## 1. Community & Reasoning
 
-r/ConspiracyTheory holds wildly varying discourse quality on a constant topic — a single thread can mix a sourced, argued theory, a bare "wake up" assertion, and off-topic banter. That makes "what is a good take here" a real distinction worth classifying. The labels measure argument *structure*, not factual correctness — a model can't adjudicate conspiracy facts, and discourse quality is what the project targets. _(Full rationale in [planning.md §1](planning.md).)_
+r/ConspiracyTheory holds wildly varying discourse quality on a constant topic — a single thread can mix a sourced, argued theory, a bare "wake up" assertion, and off-topic banter. That makes "what is a good take here" a real distinction worth classifying. The labels measure argument *structure*, not factual correctness — a model can't adjudicate conspiracy facts, and discourse quality is what the project targets. _(Full rationale in [planning.md](planning.md).)_
 
 ## 2. Label Taxonomy
 
@@ -20,12 +20,12 @@ r/ConspiracyTheory holds wildly varying discourse quality on a constant topic �
 | `assertion` | States a theory/opinion or asks a leading question with no supporting evidence. | "Another false flag effort to trigger a response against Iran." | "Trump is behind the recent Hollywood sex abuse scandals." |
 | `noise` | Off-topic, jokes, banter, one-line reactions, meta — neither makes nor evaluates a claim. | "That's like saying oatmeal is soup because you add water." | "Okay, that's enough internet for me today." |
 
-**Decision boundary:** (1) Does it make/evaluate a substantive claim? No → `noise`. (2) Backed by reasoning/evidence? Yes → `reasoned`, No → `assertion`. Hardest boundary + edge-case rules in [planning.md §3](planning.md).
+**Decision boundary:** (1) Does it make/evaluate a substantive claim? No → `noise`. (2) Backed by reasoning/evidence? Yes → `reasoned`, No → `assertion`. Hardest boundary + edge-case rules in [planning.md #3](planning.md).
 
 ## 3. Dataset
 
 - **Source:** public pre-collected export of r/ConspiracyTheory posts + comments (`reddit_ct.csv`, ~1,197 rows). Cleaned via `prep_ct.py` (strip URLs, drop bots/deleted/junk, dedupe) → 300 candidates.
-- **Labeling process:** candidates were **pre-labeled with an LLM** (Claude) from the label definitions, then reviewed and corrected by hand; rows that fit no label cleanly were dropped. Each row carries a `notes` field recording the signal behind its label. Final file: [dataset.csv](dataset.csv). _(AI assistance disclosed in §9.)_
+- **Labeling process:** candidates were **pre-labeled with an LLM** (Claude) from the label definitions, then reviewed and corrected by hand; rows that fit no label cleanly were dropped. Each row carries a `notes` field recording the signal behind its label. Final file: [dataset.csv](dataset.csv). _(AI assistance disclosed in #9.)_
 - **Size:** 300 examples (notebook split 70/15/15 → 210 train / 45 val / 45 test).
 - **Label distribution:**
 
@@ -40,7 +40,7 @@ r/ConspiracyTheory holds wildly varying discourse quality on a constant topic �
 - **3 difficult-to-label examples + decisions:**
   1. *"...it takes 3000 degrees to melt glass that you can not get from a forest fire..."* — names a specific (pseudo-)fact as evidence. Sits between `reasoned` (cites a verifiable figure) and `assertion` (decorative evidence). **Decided `reasoned`** — it builds an argument from a stated fact, even if the fact is wrong (we label structure, not truth).
   2. *"Matt Damon killed Mark Wahlberg because he was paranoid about the ending to The Departed."* — an absurd joke, but phrased as a flat theory. Between `noise` (joke) and `assertion` (stated claim). **Decided `assertion`** — it asserts a propositional claim with no "just kidding" marker.
-  3. *"According to Chinese sources... but a Washington Times report cites an Israeli microbiologist... Idk man. Sounds pretty fishy."* — casual, hedged tone but cites two named sources. Between `assertion` (casual register) and `reasoned` (sourced). **Decided `reasoned`** — sources + a mechanism survive the casual framing. (Posts like this — argued but casual in tone — are exactly the ones the model misclassifies; see §6.)
+  3. *"According to Chinese sources... but a Washington Times report cites an Israeli microbiologist... Idk man. Sounds pretty fishy."* — casual, hedged tone but cites two named sources. Between `assertion` (casual register) and `reasoned` (sourced). **Decided `reasoned`** — sources + a mechanism survive the casual framing. (Posts like this — argued but casual in tone — are exactly the ones the model misclassifies; see 6.)
 
 ## 4. Fine-Tuning Approach
 
@@ -81,7 +81,7 @@ Respond with ONLY one word: reasoned, assertion, or noise.
 | Zero-shot baseline (Groq) | **0.622** | **0.56** |
 | Fine-tuned DistilBERT (final) | **0.511** | **0.35** |
 
-Fine-tuning **lost to the baseline by 0.11 on accuracy and 0.21 on macro-F1.** Across both a default run and a class-weighted rebalancing attempt, accuracy stayed in the 0.49–0.51 range and `reasoned` F1 stayed at 0.00 — the collapse was robust to the fix (see §4).
+Fine-tuning **lost to the baseline by 0.11 on accuracy and 0.21 on macro-F1.** Across both a default run and a class-weighted rebalancing attempt, accuracy stayed in the 0.49–0.51 range and `reasoned` F1 stayed at 0.00 — the collapse was robust to the fix (see 4).
 
 ### Per-class metrics — fine-tuned DistilBERT (final)
 
@@ -113,7 +113,7 @@ Rows = true, columns = predicted. (Supplementary image: `confusion_matrix.png`.)
 | **assertion** | 0 | 6 | 13 |
 | **noise** | 0 | 2 | 17 |
 
-Two things stand out: the `reasoned` **column is entirely zero — the model never once predicted it** — and the model **over-predicts `noise` (34 of 45 posts)**. The single largest error cell is `assertion → noise` (13): bare claims get dumped into the banter bucket. Earlier training configurations collapsed similarly but in different directions — the default run leaned toward over-predicting `assertion`, the class-weighted run toward `noise` — which is itself evidence the model learned class *frequency*, not the distinctions (see §7).
+Two things stand out: the `reasoned` **column is entirely zero — the model never once predicted it** — and the model **over-predicts `noise` (34 of 45 posts)**. The single largest error cell is `assertion → noise` (13): bare claims get dumped into the banter bucket. Earlier training configurations collapsed similarly but in different directions — the default run leaned toward over-predicting `assertion`, the class-weighted run toward `noise` — which is itself evidence the model learned class *frequency*, not the distinctions (see 7).
 
 ### 3 wrong predictions analyzed
 
@@ -128,7 +128,7 @@ All three are true `reasoned` posts the model labeled `noise` — none of the 7 
 3. **"Supposedly the Manhattan Project was conceived there... the photos suggest they're meticulous... the negative tabloid stories could have been planted... I'd call Bohemian Grove a conspiracy theorists' hot potato."** (confidence 0.41)
    True `reasoned` → `noise`. **Why:** a weighed, multi-consideration analysis, but rambling and hedged. The model has no representation of "chained reasoning"; it sees a long, meandering post and defaults to `noise`.
 
-**The pattern:** the confused boundary is `reasoned → {noise, assertion}`, *never* the reverse — the model has **no concept of `reasoned` at all**. This isn't annotation inconsistency (these were labeled consistently per the §3 rules); it's a **training-data problem**: ~29 reasoned examples is too few, and they're stylistically diverse (pro-theory arguments, debunks, sourced posts, casual reasoning), so no surface pattern unifies them. Note the confidences (0.41–0.44) sit just above the 0.33 three-class chance floor — the model isn't confidently wrong, it's barely deciding at all.
+**The pattern:** the confused boundary is `reasoned → {noise, assertion}`, *never* the reverse — the model has **no concept of `reasoned` at all**. This isn't annotation inconsistency (these were labeled consistently per the 3 rules); it's a **training-data problem**: ~29 reasoned examples is too few, and they're stylistically diverse (pro-theory arguments, debunks, sourced posts, casual reasoning), so no surface pattern unifies them. Note the confidences (0.41–0.44) sit just above the 0.33 three-class chance floor — the model isn't confidently wrong, it's barely deciding at all.
 
 ### Sample classifications (fine-tuned, final)
 
@@ -167,12 +167,12 @@ A correct `noise → noise` call is reasonable for the right reason: those posts
 
 ## 8. Spec Reflection
 
-- **One way the spec helped:** my [planning.md §5](planning.md) decision to evaluate on **macro-F1 and per-class metrics, not accuracy alone**, is the only reason the failure was visible. Accuracy (0.49–0.51) looks like a mediocre-but-working model; the per-class breakdown revealed an entire class was never predicted. Without that plan I'd have reported "51% accuracy" and missed the collapse entirely.
+- **One way the spec helped:** my [planning.md #5](planning.md) decision to evaluate on **macro-F1 and per-class metrics, not accuracy alone**, is the only reason the failure was visible. Accuracy (0.49–0.51) looks like a mediocre-but-working model; the per-class breakdown revealed an entire class was never predicted. Without that plan I'd have reported "51% accuracy" and missed the collapse entirely.
 - **One way the implementation diverged + why:** the plan assumed a standard fine-tune would beat the baseline and defined success as "every class F1 ≥ 0.70." Neither held. I diverged by adding cost-sensitive class weighting and macro-F1 checkpoint selection (v2) — an unplanned step taken to fight the v1 collapse. It didn't rescue performance, but it converted a one-off result into a diagnosable pattern (two collapse directions), which is itself the finding.
 
 ## 9. AI Usage
 
-1. **Annotation pre-labeling (disclosed).** I gave Claude the label definitions and asked it to draft a label for all 300 candidates; I then reviewed and corrected rows and dropped non-fitting ones. The `notes` column records the rationale per row. I overrode the AI on borderline `reasoned`/`assertion` and joke-vs-assertion cases (see §3).
+1. **Annotation pre-labeling (disclosed).** I gave Claude the label definitions and asked it to draft a label for all 300 candidates; I then reviewed and corrected rows and dropped non-fitting ones. The `notes` column records the rationale per row. I overrode the AI on borderline `reasoned`/`assertion` and joke-vs-assertion cases (see #3).
 2. **Failure analysis.** I gave Claude the two confusion matrices and `evaluation_results.json` and asked it to diagnose the failure. It identified the minority-class collapse and that class-weighting had *shifted* the collapse (assertion → noise) rather than fixing it; I verified this against the matrices and the reconstructed test split.
 3. **Tooling/setup.** Claude wrote the data-prep scripts (`prep_ct.py`, the class-weighted trainer cell) and drafted the Groq `SYSTEM_PROMPT`, which I reviewed before running.
 
