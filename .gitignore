@@ -1,0 +1,15 @@
+# Local-only working files (raw data, scratch scripts)
+do_not_push/
+
+# Secrets — never commit your Groq key
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
