@@ -176,6 +176,3 @@ A correct `noise → noise` call is reasonable for the right reason: those posts
 2. **Failure analysis.** I gave Claude the two confusion matrices and `evaluation_results.json` and asked it to diagnose the failure. It identified the minority-class collapse and that class-weighting had *shifted* the collapse (assertion → noise) rather than fixing it; I verified this against the matrices and the reconstructed test split.
 3. **Tooling/setup.** Claude wrote the data-prep scripts (`prep_ct.py`, the class-weighted trainer cell) and drafted the Groq `SYSTEM_PROMPT`, which I reviewed before running.
 
-## 10. Demo
-
-_(Link to the 3–5 min video: 3–5 posts classified by the fine-tuned model with label + confidence, one correct narrated (e.g. the oatmeal/soup → noise), one incorrect narrated (e.g. the Wuhan-sources post → noise), and a walkthrough of this report.)_
